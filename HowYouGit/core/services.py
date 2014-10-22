@@ -5,7 +5,7 @@ class GitHubService:
 
     def get_user_repos(self, username):
 
-        token =  '9ec3e3aabd3d0d3d7c1b27670be76b450f9a3dce'
+        token =  '<replace with your token>'
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
