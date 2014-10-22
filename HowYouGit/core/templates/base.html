@@ -1,0 +1,59 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HowYouGit</title>
+
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link href='http://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/octicons/2.1.2/octicons.css' rel='stylesheet' type='text/css'>
+
+    <style>
+
+        body {
+            padding-top: 6%;
+            font-family: 'Raleway', serif;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Raleway', serif;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/">HowYouGit</a>
+                </div>
+
+            </div><!-- /.container-fluid -->
+        </nav>
+
+        <div class="row">
+
+            {% block content %}
+
+            {% endblock content %}
+
+        </div>
+    </div>
+
+</body>
+
+</html>

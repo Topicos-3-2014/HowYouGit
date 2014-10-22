@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+        .languages-info {
+            padding: 15%;
+        }
+    </style>
+
+    <div class="col-md-3"> </div>
+
+    <div class="col-md-6">
+
+        <div class="repos-info">
+            <h2><span class="mega-octicon octicon-repo"></span> {{ username }}'s repositories</h2>
+            <br>
+            {% for repo in repos %}
+                <h3>{{ repo.name }}</h3>
+                <a href="{{ repo.url }}">({{ repo.url }})</a>
+                <p>Language: {{ repo.language }}</p>
+                <p>Commits: {{ repo.commits }}</p>
+                <p>Contributors: {{ repo.contributors }}</p>
+                <hr>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <div class="col-md-3">
+        <h3>Languages overview</h3>
+        <div class="languages-info">
+            {% for key, value in languages.items %}
+                <p>{{ key }} - {{ value }}%</p>
+            {% endfor %}
+        </div>
+
+    </div>
+
+{% endblock content %}
