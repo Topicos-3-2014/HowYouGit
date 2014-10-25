@@ -5,7 +5,7 @@ class GitHubService:
 
     def get_user_repos(self, username):
 
-        token =  '<replace this by your token>'
+        token =  '<replace by your token>'
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
@@ -34,7 +34,7 @@ class GitHubService:
 
     def get_user_language_statistics(self, username):
 
-        token =  '<replace this by your token>'
+        token =  '3dac332057b6dd24d613bfc4526f4e74d9626dde'
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
@@ -58,6 +58,36 @@ class GitHubService:
         for i in languages:
             languages[i] = "{0:.2f}".format((languages[i]/float(total))*100)
 
-        #languages = sorted(languages.items(), key=operator.itemgetter(1))
-
         return languages
+
+    def get_user_contributors_statistics(self, username):
+
+        token =  '<replace by your token>'
+
+        github_user_repos = 'https://api.github.com/users/' + username + '/repos'
+
+        request = Request(github_user_repos)
+        request.add_header('Authorization', 'token %s' % token)
+        data = json.load(urlopen(request))
+
+        contributors_dict = dict()
+
+        for repo in data:
+            name = repo['name']
+            github_repo_contributors = 'https://api.github.com/repos/' + username + '/' + name + '/contributors'
+
+            request = Request(github_repo_contributors)
+            request.add_header('Authorization', 'token %s' % token)
+            contributors = json.load(urlopen(request))
+
+            for contributor in contributors:
+                name = contributor['login']
+                if name != username:
+                    if name in contributors_dict:
+                        contributors_dict[name] += 1
+                    else:
+                        contributors_dict[name] = 1
+
+        return contributors_dict
+
+

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style type="text/css">
+        .charts {
+            margin-bottom: 10%;
+        }
+    </style>
+
+    <div class="col-md-3"> </div>
+
+    <div class="col-md-6">
+
+        <div class="repos-info">
+            <h2><span class="mega-octicon octicon-repo"></span> {{ username }}'s repositories</h2>
+            <br>
+            {% for repo in repos %}
+                <h3>{{ repo.name }}</h3>
+                <a href="{{ repo.url }}">({{ repo.url }})</a>
+                <p>Language: {{ repo.language }}</p>
+                <p>Commits: {{ repo.commits }}</p>
+                <p>Contributors: {{ repo.contributors }}</p>
+                <hr>
+            {% endfor %}
+        </div>
+
+        <div id="pie-chart-languages" class="charts">
+        </div>
+        <hr>
+        <div id="contributors-chart" class="charts">
+        </div>
+
+    </div>
+
+    <div class="col-md-3"></div>
+
+    <script>
+
+$(function () {
+
+    $(document).ready(function () {
+
+        $('#pie-chart-languages').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                style: {
+                    fontFamily: 'Raleway'
+                }
+            },
+            title: {
+                text: 'Languages overview'
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            series: [{
+                type: 'pie',
+                name: 'Languages',
+                data: [
+                    {% for key, value in languages.items %}
+                        [ '{{ key }}', {{ value }} ],
+                    {% endfor %}
+                ]
+            }]
+        });
+
+        $('#contributors-chart').highcharts({
+            chart: {
+                type: 'column',
+                style: {
+                    fontFamily: 'Raleway'
+                }
+            },
+            title: {
+                text: 'In how many projects each of {{ username }}\'s friends contributed?'
+            },
+            subtitle: {
+                text: 'Contributors to {{ username }} projects'
+            },
+            xAxis: {
+                categories: [
+                    {% for key, value in contributors.items %}
+                        '{{ key }}',
+                    {% endfor %}
+                ]
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Projects'
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr> <td style="padding:0"><b>{point.y}</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            },
+            series: [{
+                name: 'GitHub users',
+                data: [
+                    {% for key, value in contributors.items %}
+                        {{ value }},
+                    {% endfor %}
+                ]
+            }]
+        });
+
+    });
+
+});
+</script>
+
+{% endblock content %}
