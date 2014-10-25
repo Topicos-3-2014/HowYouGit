@@ -10,6 +10,17 @@
             border-radius: 10px;*/
             width: 80%;
         }
+
+        .loading-img {
+            margin:auto;
+            display: block;
+            margin-top: 30%;
+        }
+
+        .loading-text {
+            text-align: center;
+        }
+
     </style>
 
     <div class="col-md-3"> </div>
@@ -17,7 +28,7 @@
     <div class="col-md-6">
 
         <div class="main-form">
-            <form action="/" method="POST">{% csrf_token %}
+            <form action="/" method="POST" id="user-form">{% csrf_token %}
                 <h4>Search data from users</h4>
                 <input type="text" id="id_username" name="username" class="form-control" placeholder="Username" />
             </form>
@@ -26,5 +37,24 @@
     </div>
 
     <div class="col-md-3"> </div>
+
+    <script type="text/javascript">
+
+    $(function () {
+
+        $(document).ready(function () {
+            $('#user-form').submit(function(e) {
+                var load = '<img src="{{ STATIC_URL }}/images/loading.gif" class="loading-img" />'
+                            +'<br>'
+                            +'<p class="loading-text">Wait a few moments...</p>'
+                            
+                $('.main-form').replaceWith(load);
+            });
+
+        });
+
+    });
+
+    </script>
 
 {% endblock content %}
