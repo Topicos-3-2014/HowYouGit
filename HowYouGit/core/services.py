@@ -34,7 +34,7 @@ class GitHubService:
 
     def get_user_language_statistics(self, username):
 
-        token =  '3dac332057b6dd24d613bfc4526f4e74d9626dde'
+        token =  '<replace by your token>'
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
