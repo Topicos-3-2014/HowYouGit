@@ -17,3 +17,15 @@ def index(request):
 
     else:
         return render(request, 'index.html')
+
+def location(request):
+	if request.method == 'POST':
+		location = request.POST['location']
+
+		github_service = GitHubService()
+
+		users = github_service.get_location_users(location)
+
+		return render(request, 'location_stats.html', { 'location' : location, 'users' : users })
+	else:
+		return render(request, 'location.html')
