@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style type="text/css">
+        .img-circle {
+            width: 15%;
+            margin-top: 9%;
+        }
+    </style>
+
+    <div class="col-md-3"> </div>
+
+    <div class="col-md-6">
+
+        <div class="location-users">
+            <h2><span class="mega-octicon octicon-eye"></span> {{ location }}'s statistics</h2>
+            
+            {% for user in users %}
+                <img src="{{ user.image }}" class="img-circle pull-left">
+                <div class="user-info col-md-10">
+                    <br>
+                    <h3>{{ user.username }}</h3>
+                    <p>Language: {{ user.language }}</p>
+                    <p>Repositories: {{ user.repos }}</p>
+                    <p>Followers: {{ user.followers }}</p>
+                </div>
+                <div class="pull-right"><i class="fa fa-times"></i></div>
+                <div style="clear:both"></div>
+                <hr>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <div class="col-md-3"></div>
+
+{% endblock content %}

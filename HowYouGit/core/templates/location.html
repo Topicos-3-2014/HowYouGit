@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+        .main-form {
+            padding: 5% 12% 10% 12%;
+            margin: 0 auto;
+            width: 80%;
+        }
+    </style>
+
+    <div class="col-md-3"> </div>
+
+    <div class="col-md-6">
+
+        <div class="main-form">
+            <form action="/location/" method="POST" id="location-form">{% csrf_token %}
+                <h4>Search data from location</h4>
+                <input type="text" id="id_location" name="location" class="form-control" placeholder="Location" />
+            </form>
+        </div>
+
+    </div>
+
+    <div class="col-md-3"> </div>
+
+    <script type="text/javascript">
+
+    $(function () {
+
+        $(document).ready(function () {
+            $('#location-form').submit(function(e) {
+                var load = '<img src="{{ STATIC_URL }}/images/loading.gif" class="loading-img" />'
+                            +'<br>'
+                            +'<p class="loading-text">Wait a few moments...</p>'
+                            
+                $('.main-form').replaceWith(load);
+            });
+
+        });
+
+    });
+
+    </script>
+
+{% endblock content %}

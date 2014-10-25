@@ -1,5 +1,6 @@
 import urllib, urllib2, json, operator
 from urllib2 import Request, urlopen
+from operator import itemgetter
 
 class GitHubService:
 
@@ -89,5 +90,46 @@ class GitHubService:
                         contributors_dict[name] = 1
 
         return contributors_dict
+
+    def get_location_users(self, location):
+
+        token =  '<replace by your token>'
+
+        github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
+
+        request = Request(github_location_users)
+        request.add_header('Authorization', 'token %s' % token)
+        data = json.load(urlopen(request))
+
+        data = data['users']
+
+        location_users = []
+
+        for user in data:
+            username = user['username']
+            repos = user['repos']
+            followers = user['followers_count']
+            language = user['language']
+            pts = repos*0.7 + followers * 0.3
+
+            location_users.append({ 'username' : username, 'repos' : repos, 'followers' : followers, 'language' : language, 'pts' : pts })
+
+        location_users = sorted(location_users, key=itemgetter('pts'), reverse=True)
+
+        #get only the 10 most relevant, by punctuation, and add their images
+        top_users = []
+        for i in range(0, 10):
+            
+            github_user_image = 'https://api.github.com/users/'+location_users[i]['username']
+            request = Request(github_user_image)
+            request.add_header('Authorization', 'token %s' % token)
+            data = json.load(urlopen(request))
+
+            image = data['avatar_url']
+            location_users[i]['image'] = image
+
+            top_users.append(location_users[i])
+
+        return top_users
 
 
