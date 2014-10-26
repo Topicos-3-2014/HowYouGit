@@ -22,6 +22,8 @@
 	        <div id="pie-chart-languages" class="charts">
             </div>
 
+            <h3>Top users</h3>
+
             {% for user in users %}
                 <a href="http://github.com/{{ user.username }}"><img src="{{ user.image }}" class="img-circle pull-left"></a>
                 <div class="user-info col-md-10">
