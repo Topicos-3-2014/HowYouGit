@@ -25,7 +25,6 @@ def location(request):
 		github_service = GitHubService()
 
 		users = github_service.get_location_users(location)
-        	languages = github_service.get_location_language_statistics(location)
 
 		return render(request, 'location_stats.html', { 'location' : location, 'users' : users, 'languages' : languages })
 	else:

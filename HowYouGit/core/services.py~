@@ -6,7 +6,7 @@ class GitHubService:
 
     def get_user_repos(self, username):
 
-        token =  '<replace by your token>'
+        token =  'd534463de4885fb37f8c7e8cf37dcd5ae089d345'
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
@@ -35,7 +35,7 @@ class GitHubService:
 
     def get_user_language_statistics(self, username):
 
-        token =  '<replace by your token>'
+        token =  'd534463de4885fb37f8c7e8cf37dcd5ae089d345'
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
@@ -63,7 +63,7 @@ class GitHubService:
 
     def get_user_contributors_statistics(self, username):
 
-        token =  '<replace by your token>'
+        token =  'd534463de4885fb37f8c7e8cf37dcd5ae089d345'
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
@@ -93,7 +93,7 @@ class GitHubService:
 
     def get_location_users(self, location):
 
-        token =  '<replace by your token>'
+        token =  'd534463de4885fb37f8c7e8cf37dcd5ae089d345'
 
         github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
 
@@ -135,7 +135,7 @@ class GitHubService:
 
     def get_location_language_statistics(self, location):
 
-        token =  '<replace by your token>'
+        token =  'd534463de4885fb37f8c7e8cf37dcd5ae089d345'
 
 	github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
 
