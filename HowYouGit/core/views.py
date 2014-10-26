@@ -21,11 +21,14 @@ def index(request):
 def location(request):
 	if request.method == 'POST':
 		location = request.POST['location']
+		location = location.replace(" ", "+")
 
 		github_service = GitHubService()
 
 		users = github_service.get_location_users(location)
-        	languages = github_service.get_location_language_statistics(location)
+        languages = github_service.get_location_language_statistics(location)
+
+		location = location.replace("+", " ")
 
 		return render(request, 'location_stats.html', { 'location' : location, 'users' : users, 'languages' : languages })
 	else:

@@ -3,7 +3,7 @@
 {% block content %}
 
     <style type="text/css">
-	.charts {
+	   .charts {
             margin-bottom: 10%;
         }
         .img-circle {
@@ -19,11 +19,11 @@
         <div class="location-users">
             <h2><span class="mega-octicon octicon-eye"></span> {{ location }}'s statistics</h2>
             
-	    <div id="pie-chart-languages" class="charts">
+	        <div id="pie-chart-languages" class="charts">
             </div>
 
             {% for user in users %}
-                <img src="{{ user.image }}" class="img-circle pull-left">
+                <a href="http://github.com/{{ user.username }}"><img src="{{ user.image }}" class="img-circle pull-left"></a>
                 <div class="user-info col-md-10">
                     <br>
                     <h3>{{ user.username }}</h3>

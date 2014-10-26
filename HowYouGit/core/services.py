@@ -110,7 +110,7 @@ class GitHubService:
             repos = user['repos']
             followers = user['followers_count']
             language = user['language']
-            pts = repos*0.7 + followers * 0.3
+            pts = repos*0.6 + followers * 0.4
 
             location_users.append({ 'username' : username, 'repos' : repos, 'followers' : followers, 'language' : language, 'pts' : pts })
 
@@ -137,7 +137,7 @@ class GitHubService:
 
         token =  '<replace by your token>'
 
-	github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
+        github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
 
         request = Request(github_location_users)
         request.add_header('Authorization', 'token %s' % token)
@@ -145,7 +145,7 @@ class GitHubService:
 
         data = data['users']
 
-	languages = dict()
+        languages = dict()
         total = 0
 
         for user in data:
