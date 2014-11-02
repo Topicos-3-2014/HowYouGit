@@ -156,7 +156,7 @@ class GitHubService:
         for user in data:
             language = user['language']
 
-        if language != None:
+            if language != None:
                 total += 1
                 if language in languages:
                     languages[language] += 1
