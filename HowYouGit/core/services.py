@@ -6,7 +6,7 @@ class GitHubService:
 
     def get_user_repos(self, username):
 
-        token =  '<replace by your token>'
+        token =  '3b0f1e62caf99cdfefb8bcb20050b4aff025e165'
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
@@ -35,7 +35,7 @@ class GitHubService:
 
     def get_user_language_statistics(self, username):
 
-        token =  '<replace by your token>'
+        token =  '3b0f1e62caf99cdfefb8bcb20050b4aff025e165'
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
@@ -63,9 +63,9 @@ class GitHubService:
 
     def get_user_contributors_statistics(self, username):
 
-        token =  '<replace by your token>'
+        token =  '3b0f1e62caf99cdfefb8bcb20050b4aff025e165'
 
-        github_user_repos = 'https://api.github.com/users/' + username + '/repos'
+        github_user_repos = 'https://api.github.com/users/' + username + '/repos?type=all'
 
         request = Request(github_user_repos)
         request.add_header('Authorization', 'token %s' % token)
@@ -75,12 +75,16 @@ class GitHubService:
 
         for repo in data:
             name = repo['name']
-            github_repo_contributors = 'https://api.github.com/repos/' + username + '/' + name + '/contributors'
+            owner= repo['owner']
+            owner_login=owner['login']
+            github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
 
             request = Request(github_repo_contributors)
             request.add_header('Authorization', 'token %s' % token)
             contributors = json.load(urlopen(request))
-
+            owner["site_admin"]=False
+            owner["contributions"]=1
+            contributors.insert(0,owner)
             for contributor in contributors:
                 name = contributor['login']
                 if name != username:
@@ -91,9 +95,10 @@ class GitHubService:
 
         return contributors_dict
 
+
     def get_location_users(self, location):
 
-        token =  '<replace by your token>'
+        token =  '3b0f1e62caf99cdfefb8bcb20050b4aff025e165'
 
         github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
 
@@ -135,7 +140,7 @@ class GitHubService:
 
     def get_location_language_statistics(self, location):
 
-        token =  '<replace by your token>'
+        token =  '3b0f1e62caf99cdfefb8bcb20050b4aff025e165'
 
         github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
 
@@ -161,4 +166,24 @@ class GitHubService:
         for i in languages:
             languages[i] = "{0:.2f}".format((languages[i]/float(total))*100)
 
-        return languages
+        return get_location_language_statistics 
+
+    def get_repos_by_location(self,location):
+
+        token =  '3b0f1e62caf99cdfefb8bcb20050b4aff025e165'
+        github_location_users='https://api.github.com/legacy/user/search/location:' + location
+        request = Request(github_location_users)
+        request.add_header('Authorization', 'token %s' % token)
+        data = json.load(urlopen(request))
+        data = data['users']
+        repos=[]
+
+        for user in data:
+            username=user['username']
+            github_user_repos = 'https://api.github.com/users/' + username + '/repos'
+            request = Request(github_user_repos)
+            request.add_header('Authorization', 'token %s' % token)
+            data_repo_user = json.load(urlopen(request))
+            repos.extend(data_repo_user)
+
+        
