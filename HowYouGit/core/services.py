@@ -156,7 +156,7 @@ class GitHubService:
         for user in data:
             language = user['language']
 
-	    if language != None:
+        if language != None:
                 total += 1
                 if language in languages:
                     languages[language] += 1
@@ -166,7 +166,7 @@ class GitHubService:
         for i in languages:
             languages[i] = "{0:.2f}".format((languages[i]/float(total))*100)
 
-        return get_location_language_statistics 
+        return languages 
 
     def get_repos_by_location(self,location):
 
@@ -177,13 +177,43 @@ class GitHubService:
         data = json.load(urlopen(request))
         data = data['users']
         repos=[]
+        list_repos=[]
+        i=0
+        counter=0
+        size_iteration=30
+        if len(data)<30:
+            size_iteration=len(data)
 
-        for user in data:
+        for counter in range(0,size_iteration):
+            user=data[counter]
             username=user['username']
             github_user_repos = 'https://api.github.com/users/' + username + '/repos'
             request = Request(github_user_repos)
             request.add_header('Authorization', 'token %s' % token)
-            data_repo_user = json.load(urlopen(request))
-            repos.extend(data_repo_user)
+            data_repos_user = json.load(urlopen(request))
+            repos.extend(data_repos_user)
+            counter=counter+1
+        for repo in repos:
+            #owner_login=repo['owner']['login']
+            #github_user_repo = 'https://api.github.com/repos/' + owner_login + '/'+repo['name']
+            #request = Request(github_user_repo)
+            #request.add_header('Authorization', 'token %s' % token)
+            #data_repo_user = json.load(urlopen(request))
+            #watchers_count=data_repo_user['subscribers_count']
+            name=repo['name']
+            html_url=repo['html_url']
+            description=repo['description']
+            pts=0.7* repo['stargazers_count']+0.2*repo['forks_count']
+            list_repos.append({ 'name': name, 'html_url' : html_url, 'description' : description, 'pts' : pts })
+            i=i+1
+    
+        list_repos = sorted(list_repos, key=itemgetter('pts'), reverse=True)
+        if len(list_repos)>=10:
+            list_repos=list_repos[0:9]
+        else:
+            list_repos=list_repos[0:(len(list_repos)-1)]
 
-        
+        return list_repos
+
+
+    

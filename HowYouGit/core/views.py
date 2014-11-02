@@ -33,3 +33,14 @@ def location(request):
         return render(request, 'location_stats.html', { 'location' : location, 'users' : users, 'languages' : languages })
     else:
         return render(request, 'location.html')
+
+def repos_location(request):
+    if request.method == 'POST':
+        location = request.POST['location']
+        location = location.replace(" ", "+")
+
+        github_service = GitHubService()
+        repos=github_service.get_repos_by_location(location)
+        return render(request,'important_repos.html',{'location' : location,'repos' : repos})
+    else:
+        return render(request, 'repos_location.html')
