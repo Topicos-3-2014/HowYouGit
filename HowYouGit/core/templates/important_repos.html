@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style type="text/css">
+        .charts {
+            margin-bottom: 10%;
+        }
+    </style>
+
+    <div class="col-md-3"> </div>
+
+    <div class="col-md-6">
+
+        <div class="repos-info">
+            <h2>Most important {{location}}'s repositories</h2>
+            <br>
+            {% for repo in repos %}
+                <span class="mega-octicon octicon-repo"></span>{{ repo.name }}</h3>
+                <br>
+                <a href="{{ repo.html_url }}">({{ repo.html_url }})</a>
+                <p>Description: {{ repo.description }}</p>
+            
+                <hr>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <div class="col-md-3"></div>
+{% endblock content %}
