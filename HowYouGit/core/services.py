@@ -237,15 +237,17 @@ class GitHubService:
         boolean_contrib=True
         counter_rem_followers=0
         token =  '3b0f1e62caf99cdfefb8bcb20050b4aff025e165'
+        
         github_user_repos = 'https://api.github.com/users/' + username + '/repos?type=all'
-
         request = Request(github_user_repos)
         request.add_header('Authorization', 'token %s' % token)
         repos = json.load(urlopen(request))
+
         github_followers='https://api.github.com/users/'+username + '/following'
         request = Request(github_followers)
         request.add_header('Authorization', 'token %s' % token)
         followers = json.load(urlopen(request))
+        
         github_user_orgs = 'https://api.github.com/users/'+ username +'/orgs'
         request = Request(github_user_orgs)
         request.add_header('Authorization', 'token %s' % token)
@@ -253,31 +255,30 @@ class GitHubService:
 
 
         for repo in repos:
+            
             name = repo['name']
             owner= repo['owner']
             owner_login=owner['login']
-            github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
+            owner["site_admin"]=False
+            owner["contributions"]=1
 
+            github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
             request = Request(github_repo_contributors)
             request.add_header('Authorization', 'token %s' % token)
             contributors=(json.load(urlopen(request)))
-            owner["site_admin"]=False
-            owner["contributions"]=1
+            
             if username!=owner_login:
-                contributors.insert(len(contributors),owner)
+                contributors.append(owner)
+            
             for contributor in contributors:
                 if self.check_contributors_list(list_contributors,contributor,username) ==False:
                     list_contributors.append(contributor)
 
-                    
+
+
         
         for contributor in list_contributors:
-            boolean_contrib==True
-            for follower in followers:
-                if follower['login']==contributor['login']:
-                    boolean_contrib=False
-                    break
-            if boolean_contrib==True :
+            if self.check_contributors_list(followers,contributor,username)==False:
                 list_who_to_follow.append({ 'login' : contributor['login'],'image' : contributor['avatar_url']})
 
         
