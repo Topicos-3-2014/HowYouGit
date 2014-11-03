@@ -25,8 +25,8 @@ def location(request):
 
         github_service = GitHubService()
 
-		users = github_service.get_location_users(location)
-		languages = github_service.get_location_language_statistics(location)
+        users = github_service.get_location_users(location)
+        languages = github_service.get_location_language_statistics(location)
 
         location = location.replace("+", " ")
 
