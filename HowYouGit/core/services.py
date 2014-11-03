@@ -214,6 +214,96 @@ class GitHubService:
             list_repos=list_repos[0:(len(list_repos)-1)]
 
         return list_repos
+    
+
+    def check_contributors_list(self,list_contributors,contributor,username):
+        if contributor['login']==username:
+            return True;
+        for c in list_contributors:
+            if c["login"]==contributor["login"]:
+                return True;
+        
+        return False;
+    
+
+
+
+    def get_who_to_follow(self,username):
+        
+
+        list_who_to_follow=[]
+        list_contributors=[]
+        list_org_members=[]
+        boolean_contrib=True
+        counter_rem_followers=0
+        token =  '3b0f1e62caf99cdfefb8bcb20050b4aff025e165'
+        github_user_repos = 'https://api.github.com/users/' + username + '/repos?type=all'
+
+        request = Request(github_user_repos)
+        request.add_header('Authorization', 'token %s' % token)
+        repos = json.load(urlopen(request))
+        github_followers='https://api.github.com/users/'+username + '/following'
+        request = Request(github_followers)
+        request.add_header('Authorization', 'token %s' % token)
+        followers = json.load(urlopen(request))
+        github_user_orgs = 'https://api.github.com/users/'+ username +'/orgs'
+        request = Request(github_user_orgs)
+        request.add_header('Authorization', 'token %s' % token)
+        orgs = json.load(urlopen(request))
+
+
+        for repo in repos:
+            name = repo['name']
+            owner= repo['owner']
+            owner_login=owner['login']
+            github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
+
+            request = Request(github_repo_contributors)
+            request.add_header('Authorization', 'token %s' % token)
+            contributors=(json.load(urlopen(request)))
+            owner["site_admin"]=False
+            owner["contributions"]=1
+            if username!=owner_login:
+                contributors.insert(len(contributors),owner)
+            for contributor in contributors:
+                if self.check_contributors_list(list_contributors,contributor,username) ==False:
+                    list_contributors.append(contributor)
+
+                    
+        
+        for contributor in list_contributors:
+            boolean_contrib==True
+            for follower in followers:
+                if follower['login']==contributor['login']:
+                    boolean_contrib=False
+                    break
+            if boolean_contrib==True :
+                list_who_to_follow.append({ 'login' : contributor['login'],'image' : contributor['avatar_url']})
+
+        
+        if len(list_who_to_follow)>=10:
+            list_who_to_follow=list_who_to_follow[0:10]
+        else:
+            counter_rem_followers=len(list_who_to_follow)
+            for org in orgs:
+                github_org_members = 'https://api.github.com/orgs/'+org['login'] +'/members'
+                request = Request(github_org_members)
+                request.add_header('Authorization', 'token %s' % token)
+                org_members = json.load(urlopen(request))
+                for org_member in org_members:
+                    if self.check_contributors_list(list_org_members,org_member,username)==False:
+                        list_org_members.append({ 'login' : org_member['login'],'image' : org_member['avatar_url']})
+                    if self.check_contributors_list(followers,org_member,username)==False:
+                        if self.check_contributors_list(list_who_to_follow,org_member,username)==False:
+                            if(counter_rem_followers>=10):
+                                break;
+                                break;
+                            else:    
+                                list_who_to_follow.append({ 'login' : org_member['login'],'image' : org_member['avatar_url']})
+                                counter_rem_followers+=1
+
+        return list_who_to_follow
+
 
 
     

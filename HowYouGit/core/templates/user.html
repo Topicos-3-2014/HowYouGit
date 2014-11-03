@@ -6,6 +6,11 @@
         .charts {
             margin-bottom: 10%;
         }
+        .img-circle{
+            width:10%;
+            margin-top:0%;
+        }
+        
     </style>
 
     <div class="col-md-3"> </div>
@@ -29,6 +34,17 @@
         </div>
         <hr>
         <div id="contributors-chart" class="charts">
+        </div>
+        <h2>Who to follow </h2> 
+        <br>
+        <br>   
+        {% for follow in who_to_follow %}
+                <a href="http://github.com/{{ follow.login }}"><img src="{{ follow.image }}" class="img-circle pull-left"></a>
+                <h4>  {{follow.login}}</h4>   
+                <div class="pull-right"><i class="fa fa-times"></i></div>
+                <div style="clear:both"></div>
+                <hr>
+        {% endfor %}
         </div>
 
     </div>
