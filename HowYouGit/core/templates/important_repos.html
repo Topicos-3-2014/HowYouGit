@@ -16,8 +16,7 @@
             <h2>Most important {{location}}'s repositories</h2>
             <br>
             {% for repo in repos %}
-                <span class="mega-octicon octicon-repo"></span> {{ repo.name }}</h3>
-                <br>
+                <h4><span class="mega-octicon octicon-repo"></span> {{ repo.name }}</h4>
                 <a href="{{ repo.html_url }}">({{ repo.html_url }})</a>
                 <p>Description: {{ repo.description }}</p>
             

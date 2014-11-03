@@ -4,6 +4,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from HowYouGit.core.services import GitHubService
 
 def index(request):
+    return render(request, 'index.html')
+
+def user(request):
     if request.method == 'POST':
         username = request.POST['username']
 
@@ -13,10 +16,10 @@ def index(request):
         languages = github_service.get_user_language_statistics(username)
         contributors = github_service.get_user_contributors_statistics(username)
         who_to_follow = github_service.get_who_to_follow(username)
-        return render(request, 'user.html', { 'repos' : repos, 'username' : username, 'languages' : languages, 'contributors' : contributors, 'who_to_follow' : who_to_follow })
+        return render(request, 'user_stats.html', { 'repos' : repos, 'username' : username, 'languages' : languages, 'contributors' : contributors, 'who_to_follow' : who_to_follow })
 
     else:
-        return render(request, 'index.html')
+        return render(request, 'user.html')
 
 def location(request):
     if request.method == 'POST':
@@ -41,6 +44,9 @@ def repos_location(request):
 
         github_service = GitHubService()
         repos=github_service.get_repos_by_location(location)
+
+        location = location.replace("+", " ")
+
         return render(request,'important_repos.html',{'location' : location,'repos' : repos})
     else:
         return render(request, 'repos_location.html')
