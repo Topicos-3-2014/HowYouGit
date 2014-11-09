@@ -1,6 +1,7 @@
-import urllib, urllib2, json, operator
+import urllib, urllib2, json, operator,datetime
 from urllib2 import Request, urlopen
 from operator import itemgetter
+
 
 class GitHubService:
 
@@ -95,11 +96,23 @@ class GitHubService:
 
         return contributors_dict
 
+    def check_user_active(self,user):
+        i = datetime.datetime.now()
+        update_at=user["updated_at"]
+        year =update_at[0:4]
+        year_int=int(year)
+        month=update_at[5:7]
+        month_int=int(month)
+        if i.year==year_int:
+            if i.month-month_int<3:
+                return True
+        return False;
 
     def get_location_users(self, location):
 
         token =  '68b68209f023a81a55c5cec85b38152100badca7'
-
+        count_top_users=0;
+        i=0;
         github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
 
         request = Request(github_location_users)
@@ -123,17 +136,19 @@ class GitHubService:
 
         #get only the 10 most relevant, by punctuation, and add their images
         top_users = []
-        for i in range(0, 10):
+        while i <len(location_users) and count_top_users<10 :
             
-            github_user_image = 'https://api.github.com/users/'+location_users[i]['username']
-            request = Request(github_user_image)
+            github_user = 'https://api.github.com/users/'+location_users[i]['username']
+            request = Request(github_user)
             request.add_header('Authorization', 'token %s' % token)
-            data = json.load(urlopen(request))
+            user = json.load(urlopen(request))
+            if self.check_user_active(user)==True:
+                image = user['avatar_url']
+                location_users[i]['image'] = image
+                top_users.append(location_users[i])
+                count_top_users+=1
+            i+=1
 
-            image = data['avatar_url']
-            location_users[i]['image'] = image
-
-            top_users.append(location_users[i])
 
         return top_users
 
