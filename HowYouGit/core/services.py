@@ -1,8 +1,12 @@
 import urllib, urllib2, json, operator
 from urllib2 import Request, urlopen
 from operator import itemgetter
+import requests
 
 class GitHubService:
+
+    def __init__(self):
+        self.headers = {'Authorization': 'token %s' % '68b68209f023a81a55c5cec85b38152100badca7'}
 
     def get_user_repos(self, username):
 
@@ -10,9 +14,11 @@ class GitHubService:
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
-        request = Request(github_user_repos)
-        request.add_header('Authorization', 'token %s' % token)
-        data = json.load(urlopen(request))
+        #request = Request(github_user_repos)
+        #request.add_header('Authorization', 'token %s' % token)
+        #data = json.load(urlopen(request))
+        response = requests.get(github_user_repos, headers=self.headers)
+        data = response.json()
 
         repos = []
 
@@ -236,7 +242,7 @@ class GitHubService:
         list_org_members=[]
         boolean_contrib=True
         counter_rem_followers=0
-        token =  '3b0f1e62caf99cdfefb8bcb20050b4aff025e165'
+        token =  '68b68209f023a81a55c5cec85b38152100badca7'
         
         github_user_repos = 'https://api.github.com/users/' + username + '/repos?type=all'
         request = Request(github_user_repos)
