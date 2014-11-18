@@ -13,10 +13,10 @@ def user(request):
         github_service = GitHubService()
 
         repos = github_service.get_user_repos(username)
-        #languages = github_service.get_user_language_statistics(username)
-        #contributors = github_service.get_user_contributors_statistics(username)
-        #who_to_follow = github_service.get_who_to_follow(username)
-        return render(request, 'user_stats.html', { 'repos' : repos })#, 'username' : username, 'languages' : languages, 'contributors' : contributors, 'who_to_follow' : who_to_follow })
+        languages = github_service.get_user_language_statistics(username)
+        contributors = github_service.get_user_contributors_statistics(username)
+        who_to_follow = github_service.get_who_to_follow(username)
+        return render(request, 'user_stats.html', { 'repos' : repos, 'username' : username, 'languages' : languages, 'contributors' : contributors, 'who_to_follow' : who_to_follow })
 
     else:
         return render(request, 'user.html')

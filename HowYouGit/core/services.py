@@ -1,5 +1,4 @@
-import urllib, urllib2, json, operator
-from urllib2 import Request, urlopen
+import json, operator
 from operator import itemgetter
 import requests
 
@@ -10,13 +9,8 @@ class GitHubService:
 
     def get_user_repos(self, username):
 
-        token =  '68b68209f023a81a55c5cec85b38152100badca7'
-
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
-        #request = Request(github_user_repos)
-        #request.add_header('Authorization', 'token %s' % token)
-        #data = json.load(urlopen(request))
         response = requests.get(github_user_repos, headers=self.headers)
         data = response.json()
 
@@ -27,13 +21,11 @@ class GitHubService:
             github_repo_commits = 'https://api.github.com/repos/' + username + '/' + name + '/commits'
             github_repo_contributors = 'https://api.github.com/repos/' + username + '/' + name + '/contributors'
 
-            request = Request(github_repo_commits)
-            request.add_header('Authorization', 'token %s' % token)
-            commits = len(json.load(urlopen(request)))
+            response = requests.get(github_repo_commits, headers=self.headers)
+            commits = len(response.json())
 
-            request = Request(github_repo_contributors)
-            request.add_header('Authorization', 'token %s' % token)
-            contributors = len(json.load(urlopen(request)))
+            response = requests.get(github_repo_contributors, headers=self.headers)
+            contributors = len(response.json())
 
             repos.append({ 'name' : name, 'language' : repo['language'], 'url' : repo['html_url'], 'commits' : commits, 'contributors' : contributors })
 
@@ -41,13 +33,10 @@ class GitHubService:
 
     def get_user_language_statistics(self, username):
 
-        token =  '68b68209f023a81a55c5cec85b38152100badca7'
-
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
 
-        request = Request(github_user_repos)
-        request.add_header('Authorization', 'token %s' % token)
-        data = json.load(urlopen(request))
+        response = requests.get(github_user_repos, headers=self.headers)
+        data = response.json()
 
         languages = dict()
         total = 0
@@ -69,13 +58,10 @@ class GitHubService:
 
     def get_user_contributors_statistics(self, username):
 
-        token =  '68b68209f023a81a55c5cec85b38152100badca7'
-
         github_user_repos = 'https://api.github.com/users/' + username + '/repos?type=all'
 
-        request = Request(github_user_repos)
-        request.add_header('Authorization', 'token %s' % token)
-        data = json.load(urlopen(request))
+        response = requests.get(github_user_repos, headers=self.headers)
+        data = response.json()
 
         contributors_dict = dict()
 
@@ -85,12 +71,13 @@ class GitHubService:
             owner_login=owner['login']
             github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
 
-            request = Request(github_repo_contributors)
-            request.add_header('Authorization', 'token %s' % token)
-            contributors = json.load(urlopen(request))
+            response = requests.get(github_repo_contributors, headers=self.headers)
+            contributors = response.json()
+            
             owner["site_admin"]=False
             owner["contributions"]=1
             contributors.insert(0,owner)
+            
             for contributor in contributors:
                 name = contributor['login']
                 if name != username:
@@ -104,13 +91,10 @@ class GitHubService:
 
     def get_location_users(self, location):
 
-        token =  '68b68209f023a81a55c5cec85b38152100badca7'
-
         github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
 
-        request = Request(github_location_users)
-        request.add_header('Authorization', 'token %s' % token)
-        data = json.load(urlopen(request))
+        response = requests.get(github_location_users, headers=self.headers)
+        data = response.json()
 
         data = data['users']
 
@@ -132,9 +116,9 @@ class GitHubService:
         for i in range(0, 10):
             
             github_user_image = 'https://api.github.com/users/'+location_users[i]['username']
-            request = Request(github_user_image)
-            request.add_header('Authorization', 'token %s' % token)
-            data = json.load(urlopen(request))
+            
+            response = requests.get(github_user_image, headers=self.headers)
+            data = response.json()
 
             image = data['avatar_url']
             location_users[i]['image'] = image
@@ -146,13 +130,10 @@ class GitHubService:
 
     def get_location_language_statistics(self, location):
 
-        token =  '68b68209f023a81a55c5cec85b38152100badca7'
-
         github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
 
-        request = Request(github_location_users)
-        request.add_header('Authorization', 'token %s' % token)
-        data = json.load(urlopen(request))
+        response = requests.get(github_location_users, headers=self.headers)
+        data = response.json()
 
         data = data['users']
 
@@ -176,29 +157,35 @@ class GitHubService:
 
     def get_repos_by_location(self,location):
 
-        token =  '68b68209f023a81a55c5cec85b38152100badca7'
         github_location_users='https://api.github.com/legacy/user/search/location:' + location
-        request = Request(github_location_users)
-        request.add_header('Authorization', 'token %s' % token)
-        data = json.load(urlopen(request))
+        
+        response = requests.get(github_location_users, headers=self.headers)
+        data = response.json()
+
         data = data['users']
+        
         repos=[]
         list_repos=[]
+        
         i=0
         counter=0
         size_iteration=30
+        
         if len(data)<30:
             size_iteration=len(data)
 
         for counter in range(0,size_iteration):
             user=data[counter]
             username=user['username']
+            
             github_user_repos = 'https://api.github.com/users/' + username + '/repos'
-            request = Request(github_user_repos)
-            request.add_header('Authorization', 'token %s' % token)
-            data_repos_user = json.load(urlopen(request))
+            
+            response = requests.get(github_user_repos, headers=self.headers)
+            data_repos_user = response.json()
+
             repos.extend(data_repos_user)
             counter=counter+1
+
         for repo in repos:
             #owner_login=repo['owner']['login']
             #github_user_repo = 'https://api.github.com/repos/' + owner_login + '/'+repo['name']
@@ -242,22 +229,18 @@ class GitHubService:
         list_org_members=[]
         boolean_contrib=True
         counter_rem_followers=0
-        token =  '68b68209f023a81a55c5cec85b38152100badca7'
         
         github_user_repos = 'https://api.github.com/users/' + username + '/repos?type=all'
-        request = Request(github_user_repos)
-        request.add_header('Authorization', 'token %s' % token)
-        repos = json.load(urlopen(request))
+        response = requests.get(github_user_repos, headers=self.headers)
+        repos = response.json()
 
-        github_followers='https://api.github.com/users/'+username + '/following'
-        request = Request(github_followers)
-        request.add_header('Authorization', 'token %s' % token)
-        followers = json.load(urlopen(request))
+        github_user_following='https://api.github.com/users/'+username + '/following'
+        response = requests.get(github_user_following, headers=self.headers)
+        followers = response.json()
         
         github_user_orgs = 'https://api.github.com/users/'+ username +'/orgs'
-        request = Request(github_user_orgs)
-        request.add_header('Authorization', 'token %s' % token)
-        orgs = json.load(urlopen(request))
+        response = requests.get(github_user_orgs, headers=self.headers)
+        orgs = response.json()
 
 
         for repo in repos:
@@ -269,9 +252,8 @@ class GitHubService:
             owner["contributions"]=1
 
             github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
-            request = Request(github_repo_contributors)
-            request.add_header('Authorization', 'token %s' % token)
-            contributors=(json.load(urlopen(request)))
+            response = requests.get(github_repo_contributors, headers=self.headers)
+            contributors = response.json()
             
             if username!=owner_login:
                 contributors.append(owner)
@@ -279,10 +261,7 @@ class GitHubService:
             for contributor in contributors:
                 if self.check_contributors_list(list_contributors,contributor,username) ==False:
                     list_contributors.append(contributor)
-
-
-
-        
+ 
         for contributor in list_contributors:
             if self.check_contributors_list(followers,contributor,username)==False:
                 list_who_to_follow.append({ 'login' : contributor['login'],'image' : contributor['avatar_url']})
@@ -293,10 +272,11 @@ class GitHubService:
         else:
             counter_rem_followers=len(list_who_to_follow)
             for org in orgs:
+                
                 github_org_members = 'https://api.github.com/orgs/'+org['login'] +'/members'
-                request = Request(github_org_members)
-                request.add_header('Authorization', 'token %s' % token)
-                org_members = json.load(urlopen(request))
+                response = requests.get(github_org_members, headers=self.headers)
+                org_members = response.json()
+
                 for org_member in org_members:
                     if self.check_contributors_list(list_org_members,org_member,username)==False:
                         list_org_members.append({ 'login' : org_member['login'],'image' : org_member['avatar_url']})
@@ -310,7 +290,3 @@ class GitHubService:
                                 counter_rem_followers+=1
 
         return list_who_to_follow
-
-
-
-    
