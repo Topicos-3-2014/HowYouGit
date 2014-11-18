@@ -187,12 +187,6 @@ class GitHubService:
             counter=counter+1
 
         for repo in repos:
-            #owner_login=repo['owner']['login']
-            #github_user_repo = 'https://api.github.com/repos/' + owner_login + '/'+repo['name']
-            #request = Request(github_user_repo)
-            #request.add_header('Authorization', 'token %s' % token)
-            #data_repo_user = json.load(urlopen(request))
-            #watchers_count=data_repo_user['subscribers_count']
             name=repo['name']
             html_url=repo['html_url']
             description=repo['description']
