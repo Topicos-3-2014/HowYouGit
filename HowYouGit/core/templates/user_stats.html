@@ -2,19 +2,33 @@
 
 {% block content %}
 
+
+
     <style type="text/css">
+        
         .charts {
             margin-bottom: 10%;
+              
         }
         .img-circle{
             width:10%;
             margin-top:0%;
             margin-right: 2%;
+            
         }
 
         .follow-username {
             margin-top: 3%;
+            
         }
+        #graph-container {
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          position: absolute;
+    }   
+        
         
     </style>
 
@@ -40,23 +54,73 @@
         <hr>
         <div id="contributors-chart" class="charts">
         </div>
-        <h2>Who to follow </h2> 
-        <br>
-        <br>   
-        {% for follow in who_to_follow %}
-                <a href="http://github.com/{{ follow.login }}"><img src="{{ follow.image }}" class="img-circle pull-left"></a>
-                <h4 class="follow-username">{{follow.login}}</h4>   
-                <div class="pull-right"><i class="fa fa-times"></i></div>
-                <div style="clear:both"></div>
-                <hr>
-        {% endfor %}
+        
+        <div class="follow">
+            <h2>Who to follow </h2> 
+                <br>
+                <br>   
+                {% for follow in who_to_follow %}
+                        <a href="http://github.com/{{ follow.login }}"><img src="{{ follow.image }}" class="img-circle pull-left"></a>
+                        <h4 class="follow-username">{{follow.login}}</h4>   
+                        <div class="pull-right"><i class="fa fa-times"></i></div>
+                        <div style="clear:both"></div>
+                        <hr>
+                {% endfor %}
         </div>
-
+        </div>
+        <div id="graph-container"></div>
+                
+        
+            
+    </div>
+    <div class="col-md-3">
     </div>
 
-    <div class="col-md-3"></div>
+<script>
+    var i,
+        s,
+        N ={{size_contributors}} ,
+        E = {{size_contributors}},
+        g = {
+          nodes: [],
+          edges: []
+        };
+        g.nodes.push({
+            id: 'n',
+            label: '{{username}}',
+            x: Math.random(),
+            y: Math.random(),
+            size: {{max_contributor}}*20+20,
+            color: '#0099CC'
+          });
+        {% for key, value in contributors.items %}                
+            g.nodes.push({
+                id: 'n' + '{{key}}',
+                label: '{{key}}',
+                x: Math.random(),
+                y: Math.random(),
+                size: {{value}}%({{max_contributor}}+1)*20,
+                color: '#0099CC'
+              });
+            g.edges.push({
+                id: '{{key}}',
+                label:{{value}},
+                source: 'n',
+                target: 'n' + '{{key}}',
+                size: 20,
+                color: '#666'
+            });
+        {% endfor %}
+            
+    // Generate a random graph:
+  
 
-    <script>
+    // Instantiate sigma:
+    s = new sigma({
+      graph: g,
+      container: 'graph-container'
+    });    
+
 
 $(function () {
 
@@ -115,6 +179,7 @@ $(function () {
                 categories: [
                     {% for key, value in contributors.items %}
                         '{{ key }}',
+                    
                     {% endfor %}
                 ]
             },
