@@ -14,3 +14,5 @@ Installing
     - `$ python manage.py runserver`
 5. If it doesn't work, try:
     - `$ pip install django`
+6. For problems with `requests` library, follow instructions in `Get the Code`:
+    - http://docs.python-requests.org/en/latest/user/install/#get-the-code
