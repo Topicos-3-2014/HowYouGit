@@ -18,7 +18,10 @@ def user(request):
             contributors = github_service.get_user_contributors_statistics(username)
             who_to_follow = github_service.get_who_to_follow(username)
             size_contributors=len(contributors)
-            max_contributor=max(contributors.values())
+            if size_contributors>0:
+                max_contributor=max(contributors.values())
+            else:
+                max_contributor=0
             print(max_contributor)
             
             return render(request, 'user_stats.html', { 'repos' : repos, 'username' : username, 'languages' : languages, 'contributors' : contributors, 'who_to_follow' : who_to_follow ,'size_contributors' : size_contributors,'max_contributor':max_contributor})
