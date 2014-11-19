@@ -17,7 +17,8 @@
         <div class="main-form">
             <form action="/repos_location/" method="POST" id="location-form">{% csrf_token %}
                 <h4>Search by location</h4>
-                <input type="text" id="id_location" name="location" class="form-control" placeholder="Location" />
+                <input type="text" id="id_location" name="location" class="form-control" placeholder="Location" required/>
+                <p class="text-danger text-center">{{ invalid_message }}<strong>{{ location }}</strong></p>
             </form>
         </div>
 

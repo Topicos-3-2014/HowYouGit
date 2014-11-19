@@ -17,8 +17,8 @@
 
         <div class="main-form">
             <form action="/user/" method="POST" id="user-form">{% csrf_token %}
-                <h4>Search by username</h4>
-                <input type="text" id="id_username" name="username" class="form-control" placeholder="Username" />
+                <h4>Search by <i class="text-danger">{{ invalid_message }}</i> username</h4>
+                <input type="text" id="id_username" name="username" class="form-control" placeholder="Username" required/>
             </form>
         </div>
 

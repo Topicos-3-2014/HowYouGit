@@ -7,6 +7,15 @@ class GitHubService:
     def __init__(self):
         self.headers = {'Authorization': 'token %s' % '68b68209f023a81a55c5cec85b38152100badca7'}
 
+    def verify_user(self,username):
+        github_user_repos = 'https://api.github.com/users/' + username + '/repos'
+        response = requests.get(github_user_repos, headers=self.headers)
+        data = response.json()
+        if 'message' in data:
+            return False
+        else:
+            return True
+
     def get_user_repos(self, username):
 
         github_user_repos = 'https://api.github.com/users/' + username + '/repos'
@@ -22,10 +31,15 @@ class GitHubService:
             github_repo_contributors = 'https://api.github.com/repos/' + username + '/' + name + '/contributors'
 
             response = requests.get(github_repo_commits, headers=self.headers)
-            commits = len(response.json())
+            data_commits = response.json()
+            commits = len(data_commits)
 
-            response = requests.get(github_repo_contributors, headers=self.headers)
-            contributors = len(response.json())
+            if 'message' in data_commits:   # message says Git Repository is empty.
+                contributors = 1
+                commits = 0
+            else:
+                response = requests.get(github_repo_contributors, headers=self.headers)
+                contributors = len(response.json())
 
             repos.append({ 'name' : name, 'language' : repo['language'], 'url' : repo['html_url'], 'commits' : commits, 'contributors' : contributors })
 
@@ -66,28 +80,32 @@ class GitHubService:
         contributors_dict = dict()
 
         for repo in data:
-            name = repo['name']
-            owner= repo['owner']
-            owner_login=owner['login']
-            github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
+            # Check if repo is empty
+            github_repo_commits = 'https://api.github.com/repos/' + repo['owner']['login'] + '/' + repo['name'] + '/commits'
+            response = requests.get(github_repo_commits, headers=self.headers)
+            data_commits = response.json()
+            if 'message' not in data_commits:   # message says Git Repository is empty.
+                name = repo['name']
+                owner= repo['owner']
+                owner_login=owner['login']
+                github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
 
-            response = requests.get(github_repo_contributors, headers=self.headers)
-            contributors = response.json()
-            
-            owner["site_admin"]=False
-            owner["contributions"]=1
-            contributors.insert(0,owner)
-            
-            for contributor in contributors:
-                name = contributor['login']
-                if name != username:
-                    if name in contributors_dict:
-                        contributors_dict[name] += 1
-                    else:
-                        contributors_dict[name] = 1
+                response = requests.get(github_repo_contributors, headers=self.headers)
+                contributors = response.json()
+                
+                owner["site_admin"]=False
+                owner["contributions"]=1
+                contributors.insert(0,owner)
+                
+                for contributor in contributors:
+                    name = contributor['login']
+                    if name != username:
+                        if name in contributors_dict:
+                            contributors_dict[name] += 1
+                        else:
+                            contributors_dict[name] = 1
 
         return contributors_dict
-
 
     def get_location_users(self, location):
 
@@ -98,34 +116,37 @@ class GitHubService:
 
         data = data['users']
 
-        location_users = []
+        if len(data)>0:
+            location_users = []
 
-        for user in data:
-            username = user['username']
-            repos = user['repos']
-            followers = user['followers_count']
-            language = user['language']
-            pts = repos*0.6 + followers * 0.4
+            for user in data:
+                username = user['username']
+                repos = user['repos']
+                followers = user['followers_count']
+                language = user['language']
+                pts = repos*0.6 + followers * 0.4
 
-            location_users.append({ 'username' : username, 'repos' : repos, 'followers' : followers, 'language' : language, 'pts' : pts })
+                location_users.append({ 'username' : username, 'repos' : repos, 'followers' : followers, 'language' : language, 'pts' : pts })
 
-        location_users = sorted(location_users, key=itemgetter('pts'), reverse=True)
+            location_users = sorted(location_users, key=itemgetter('pts'), reverse=True)
 
-        #get only the 10 most relevant, by punctuation, and add their images
-        top_users = []
-        for i in range(0, 10):
-            
-            github_user_image = 'https://api.github.com/users/'+location_users[i]['username']
-            
-            response = requests.get(github_user_image, headers=self.headers)
-            data = response.json()
+            #get only the 10 most relevant, by punctuation, and add their images
+            top_users = []
+            for i in range(0, 10):
+                
+                github_user_image = 'https://api.github.com/users/'+location_users[i]['username']
+                
+                response = requests.get(github_user_image, headers=self.headers)
+                data = response.json()
 
-            image = data['avatar_url']
-            location_users[i]['image'] = image
+                image = data['avatar_url']
+                location_users[i]['image'] = image
 
-            top_users.append(location_users[i])
+                top_users.append(location_users[i])
 
-        return top_users
+            return top_users
+        else:
+            return []
 
 
     def get_location_language_statistics(self, location):
@@ -163,44 +184,47 @@ class GitHubService:
         data = response.json()
 
         data = data['users']
-        
-        repos=[]
-        list_repos=[]
-        
-        i=0
-        counter=0
-        size_iteration=30
-        
-        if len(data)<30:
-            size_iteration=len(data)
 
-        for counter in range(0,size_iteration):
-            user=data[counter]
-            username=user['username']
+        if len(data)>0:
+            repos=[]
+            list_repos=[]
             
-            github_user_repos = 'https://api.github.com/users/' + username + '/repos'
+            i=0
+            counter=0
+            size_iteration=30
             
-            response = requests.get(github_user_repos, headers=self.headers)
-            data_repos_user = response.json()
+            if len(data)<30:
+                size_iteration=len(data)
 
-            repos.extend(data_repos_user)
-            counter=counter+1
+            for counter in range(0,size_iteration):
+                user=data[counter]
+                username=user['username']
+                
+                github_user_repos = 'https://api.github.com/users/' + username + '/repos'
+                
+                response = requests.get(github_user_repos, headers=self.headers)
+                data_repos_user = response.json()
 
-        for repo in repos:
-            name=repo['name']
-            html_url=repo['html_url']
-            description=repo['description']
-            pts=0.7* repo['stargazers_count']+0.2*repo['forks_count']
-            list_repos.append({ 'name': name, 'html_url' : html_url, 'description' : description, 'pts' : pts })
-            i=i+1
-    
-        list_repos = sorted(list_repos, key=itemgetter('pts'), reverse=True)
-        if len(list_repos)>=10:
-            list_repos=list_repos[0:9]
+                repos.extend(data_repos_user)
+                counter=counter+1
+
+            for repo in repos:
+                name=repo['name']
+                html_url=repo['html_url']
+                description=repo['description']
+                pts=0.7* repo['stargazers_count']+0.2*repo['forks_count']
+                list_repos.append({ 'name': name, 'html_url' : html_url, 'description' : description, 'pts' : pts })
+                i=i+1
+        
+            list_repos = sorted(list_repos, key=itemgetter('pts'), reverse=True)
+            if len(list_repos)>=10:
+                list_repos=list_repos[0:9]
+            else:
+                list_repos=list_repos[0:(len(list_repos)-1)]
+
+            return list_repos
         else:
-            list_repos=list_repos[0:(len(list_repos)-1)]
-
-        return list_repos
+            return []
     
 
     def check_contributors_list(self,list_contributors,contributor,username):
@@ -245,16 +269,21 @@ class GitHubService:
             owner["site_admin"]=False
             owner["contributions"]=1
 
-            github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
-            response = requests.get(github_repo_contributors, headers=self.headers)
-            contributors = response.json()
-            
-            if username!=owner_login:
-                contributors.append(owner)
-            
-            for contributor in contributors:
-                if self.check_contributors_list(list_contributors,contributor,username) ==False:
-                    list_contributors.append(contributor)
+            # Check if repo is empty
+            github_repo_commits = 'https://api.github.com/repos/' + owner_login + '/' + name + '/commits'
+            response = requests.get(github_repo_commits, headers=self.headers)
+            data_commits = response.json()
+            if 'message' not in data_commits:   # message says Git Repository is empty.
+                github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
+                response = requests.get(github_repo_contributors, headers=self.headers)
+                contributors = response.json()
+                
+                if username!=owner_login:
+                    contributors.append(owner)
+                
+                for contributor in contributors:
+                    if self.check_contributors_list(list_contributors,contributor,username) ==False:
+                        list_contributors.append(contributor)
  
         for contributor in list_contributors:
             if self.check_contributors_list(followers,contributor,username)==False:
