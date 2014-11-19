@@ -22,7 +22,7 @@
             
         }
         #graph-container {
-            border: 1px solid #e0ded7;
+            
             height: 260px;
             overflow: auto;
             margin: 12px 0;
@@ -35,7 +35,7 @@
 
     <div class="col-md-6">
 
-        <div class="repos-info">
+                <div class="repos-info">
             <h2><span class="mega-octicon octicon-repo"></span> {{ username }}'s repositories</h2>
             <br>
             {% for repo in repos %}
@@ -53,7 +53,8 @@
         <hr>
         <div id="contributors-chart" class="charts">
         </div>
-        
+        <h2 ><span class="mega-octicon octicon-organization"></span> Contributions Graph</h2>
+        <div id="graph-container"></div>
         <div class="follow">
             <h2>Who to follow </h2> 
                 <br>
@@ -66,8 +67,10 @@
                         <hr>
                 {% endfor %}
         </div>
+        
+
         </div>
-        <div id="graph-container"></div>
+        
                 
         
             
@@ -87,18 +90,18 @@
         g.nodes.push({
             id: 'n',
             label: '{{username}}',
-            x: Math.random(),
-            y: Math.random(),
+            x: 0,
+            y: 0,
             size: {{max_contributor}}*20+20,
-            color: '#0099CC'
+            color: '#003F87'
           });
         {% for key, value in contributors.items %}                
             g.nodes.push({
                 id: 'n' + '{{key}}',
-                label: '{{key}}',
-                x: Math.random(),
-                y: Math.random(),
-                size: {{value}}%({{max_contributor}}+1)*20,
+                label: '{{key}}'+':'+{{value}} +' project(s)' ,
+                x: Math.random()+1,
+                y: Math.random()+1,
+                size: ({{value}}%({{max_contributor}}+1)*20)+3,
                 color: '#0099CC'
               });
             g.edges.push({
@@ -106,8 +109,8 @@
                 label:{{value}},
                 source: 'n',
                 target: 'n' + '{{key}}',
-                size: 20,
-                color: '#666'
+                size: 100,
+                color: '#00EE76'
             });
         {% endfor %}
             
