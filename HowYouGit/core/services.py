@@ -1,64 +1,33 @@
 import json, operator
 from operator import itemgetter
 import requests
+from mongomodels import *
+from mongoengine import *
 
 class GitHubService:
 
     def __init__(self):
         self.headers = {'Authorization': 'token %s' % '68b68209f023a81a55c5cec85b38152100badca7'}
-
-    def verify_user(self,username):
-        github_user_repos = 'https://api.github.com/users/' + username + '/repos'
-        response = requests.get(github_user_repos, headers=self.headers)
-        data = response.json()
-        if 'message' in data:
-            return False
-        else:
-            return True
+        connect('teste_mongo', host='localhost', port=27017)
 
     def get_user_repos(self, username):
 
-        github_user_repos = 'https://api.github.com/users/' + username + '/repos'
+        user = User.objects.filter(username__exact=username).first()
 
-        response = requests.get(github_user_repos, headers=self.headers)
-        data = response.json()
-
-        repos = []
-
-        for repo in data:
-            name = repo['name']
-            github_repo_commits = 'https://api.github.com/repos/' + username + '/' + name + '/commits'
-            github_repo_contributors = 'https://api.github.com/repos/' + username + '/' + name + '/contributors'
-
-            response = requests.get(github_repo_commits, headers=self.headers)
-            data_commits = response.json()
-            commits = len(data_commits)
-
-            if 'message' in data_commits:   # message says Git Repository is empty.
-                contributors = 1
-                commits = 0
-            else:
-                response = requests.get(github_repo_contributors, headers=self.headers)
-                contributors = len(response.json())
-
-            repos.append({ 'name' : name, 'language' : repo['language'], 'url' : repo['html_url'], 'commits' : commits, 'contributors' : contributors })
-
-        return repos
+        return user.repositories
 
     def get_user_language_statistics(self, username):
 
-        github_user_repos = 'https://api.github.com/users/' + username + '/repos'
-
-        response = requests.get(github_user_repos, headers=self.headers)
-        data = response.json()
+        user = User.objects.filter(username__exact=username).first()
 
         languages = dict()
         total = 0
 
-        for repo in data:
-            language = repo['language']
+        for repo in user.repositories:
 
-            if language != None:
+            language = repo.language
+
+            if language != "":
                 total += 1
                 if language in languages:
                     languages[language] += 1
@@ -72,244 +41,150 @@ class GitHubService:
 
     def get_user_contributors_statistics(self, username):
 
-        github_user_repos = 'https://api.github.com/users/' + username + '/repos?type=all'
-
-        response = requests.get(github_user_repos, headers=self.headers)
-        data = response.json()
+        user = User.objects.filter(username__exact=username).first()
 
         contributors_dict = dict()
 
-        for repo in data:
-            # Check if repo is empty
-            github_repo_commits = 'https://api.github.com/repos/' + repo['owner']['login'] + '/' + repo['name'] + '/commits'
-            response = requests.get(github_repo_commits, headers=self.headers)
-            data_commits = response.json()
-            if 'message' not in data_commits:   # message says Git Repository is empty.
-                name = repo['name']
-                owner= repo['owner']
-                owner_login=owner['login']
-                github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
+        for repo in user.repositories:
 
-                response = requests.get(github_repo_contributors, headers=self.headers)
-                contributors = response.json()
-                
-                owner["site_admin"]=False
-                owner["contributions"]=1
-                contributors.insert(0,owner)
-                
-                for contributor in contributors:
-                    name = contributor['login']
-                    if name != username:
-                        if name in contributors_dict:
-                            contributors_dict[name] += 1
-                        else:
-                            contributors_dict[name] = 1
+            contributors = repo.contributors
+
+            for contributor in contributors:
+                if contributor in contributors_dict:
+                    contributors_dict[contributor.username] += 1
+                else:
+                    contributors_dict[contributor.username] = 1
 
         return contributors_dict
 
     def get_location_users(self, location):
 
-        github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
+        users_location = User.objects.filter(location__icontains=location)
 
-        response = requests.get(github_location_users, headers=self.headers)
-        data = response.json()
+        location_users = []
 
-        data = data['users']
+        for user in users_location:
+            pts = len(user.repositories)*0.6 + len(user.followers) * 0.4
 
-        if len(data)>0:
-            location_users = []
+            location_users.append({ 'username' : user.username, 'repos' : len(user.repositories), 'followers' : len(user.followers), 'pts' : pts })
 
-            for user in data:
-                username = user['username']
-                repos = user['repos']
-                followers = user['followers_count']
-                language = user['language']
-                pts = repos*0.6 + followers * 0.4
+        location_users = sorted(location_users, key=itemgetter('pts'), reverse=True)
 
-                location_users.append({ 'username' : username, 'repos' : repos, 'followers' : followers, 'language' : language, 'pts' : pts })
+        #get only the 10 most relevant, by punctuation, and add their images
+        top_users = []
+        max = 10
 
-            location_users = sorted(location_users, key=itemgetter('pts'), reverse=True)
+        if len(location_users) < 10:
+            max = len(location_users)
 
-            #get only the 10 most relevant, by punctuation, and add their images
-            top_users = []
-            for i in range(0, 10):
-                
-                github_user_image = 'https://api.github.com/users/'+location_users[i]['username']
-                
-                response = requests.get(github_user_image, headers=self.headers)
-                data = response.json()
+        for i in range(0, max):
+            
+            github_user_image = 'https://api.github.com/users/'+location_users[i]['username']
+            
+            response = requests.get(github_user_image, headers=self.headers)
+            data = response.json()
 
-                image = data['avatar_url']
-                location_users[i]['image'] = image
+            image = data['avatar_url']
+            location_users[i]['image'] = image
 
-                top_users.append(location_users[i])
+            top_users.append(location_users[i])
 
-            return top_users
-        else:
-            return []
+        return top_users
 
 
     def get_location_language_statistics(self, location):
 
-        github_location_users = 'https://api.github.com/legacy/user/search/location:' + location
-
-        response = requests.get(github_location_users, headers=self.headers)
-        data = response.json()
-
-        data = data['users']
+        users_location = User.objects.filter(location__icontains=location)
 
         languages = dict()
         total = 0
 
-        for user in data:
-            language = user['language']
+        for user in users_location:
+            for repo in user.repositories:
 
-            if language != None:
-                total += 1
-                if language in languages:
-                    languages[language] += 1
-                else:
-                    languages[language] = 1
+                language = repo.language
+
+                if language != "":
+                    total += 1
+                    if language in languages:
+                        languages[language] += 1
+                    else:
+                        languages[language] = 1
 
         for i in languages:
             languages[i] = "{0:.2f}".format((languages[i]/float(total))*100)
 
         return languages 
 
-    def get_repos_by_location(self,location):
+    def get_repos_by_location(self, location):
 
-        github_location_users='https://api.github.com/legacy/user/search/location:' + location
-        
-        response = requests.get(github_location_users, headers=self.headers)
-        data = response.json()
+        users_location = User.objects.filter(location__contains=location)
 
-        data = data['users']
+        list_repos = []
 
-        if len(data)>0:
-            repos=[]
-            list_repos=[]
-            
-            i=0
-            counter=0
-            size_iteration=30
-            
-            if len(data)<30:
-                size_iteration=len(data)
-
-            for counter in range(0,size_iteration):
-                user=data[counter]
-                username=user['username']
+        for user in users_location:
+            for repo in user.repositories:
                 
-                github_user_repos = 'https://api.github.com/users/' + username + '/repos'
-                
-                response = requests.get(github_user_repos, headers=self.headers)
-                data_repos_user = response.json()
-
-                repos.extend(data_repos_user)
-                counter=counter+1
-
-            for repo in repos:
-                name=repo['name']
-                html_url=repo['html_url']
-                description=repo['description']
-                pts=0.7* repo['stargazers_count']+0.2*repo['forks_count']
-                list_repos.append({ 'name': name, 'html_url' : html_url, 'description' : description, 'pts' : pts })
-                i=i+1
+                pts = 0.7*repo.stargazers + 0.2*repo.forks
+                list_repos.append({ 'name': repo.name, 'html_url' : repo.url, 'description' : repo.description, 'pts' : pts, 'owner' : user.username })
+       
+        list_repos = sorted(list_repos, key=itemgetter('pts'), reverse=True)
         
-            list_repos = sorted(list_repos, key=itemgetter('pts'), reverse=True)
-            if len(list_repos)>=10:
-                list_repos=list_repos[0:9]
-            else:
-                list_repos=list_repos[0:(len(list_repos)-1)]
-
-            return list_repos
+        if len(list_repos)>=10:
+            list_repos=list_repos[0:9]
         else:
-            return []
+            list_repos=list_repos[0:(len(list_repos)-1)]
+
+        return list_repos
+
+    def check_if_already_follows(self, list_following, contributor):
     
-
-    def check_contributors_list(self,list_contributors,contributor,username):
-        if contributor['login']==username:
-            return True;
-        for c in list_contributors:
-            if c["login"]==contributor["login"]:
-                return True;
+        for f_user in list_following:
+            if contributor.username == f_user['login']:
+                return True
         
-        return False;
-    
+        return False
 
+    def who_to_follow(self, username):
 
+        user = User.objects.filter(username__exact=username).first()
 
-    def get_who_to_follow(self,username):
-        
+        who_to_follow = []
 
-        list_who_to_follow=[]
-        list_contributors=[]
-        list_org_members=[]
-        boolean_contrib=True
-        counter_rem_followers=0
-        
-        github_user_repos = 'https://api.github.com/users/' + username + '/repos?type=all'
-        response = requests.get(github_user_repos, headers=self.headers)
-        repos = response.json()
+        for repo in user.repositories:
 
-        github_user_following='https://api.github.com/users/'+username + '/following'
-        response = requests.get(github_user_following, headers=self.headers)
-        followers = response.json()
-        
-        github_user_orgs = 'https://api.github.com/users/'+ username +'/orgs'
-        response = requests.get(github_user_orgs, headers=self.headers)
-        orgs = response.json()
+            contributors = repo.contributors
 
+            for contributor in contributors:
+                github_user_following = 'https://api.github.com/users/' + username + '/following'
+                response = requests.get(github_user_following, headers=self.headers)
+                following = response.json()
 
-        for repo in repos:
+                if self.check_if_already_follows(following, contributor) == False and len(who_to_follow) < 10:
             
-            name = repo['name']
-            owner= repo['owner']
-            owner_login=owner['login']
-            owner["site_admin"]=False
-            owner["contributions"]=1
+                    github_user_image = 'https://api.github.com/users/'+contributor.username
+                    
+                    response = requests.get(github_user_image, headers=self.headers)
+                    data = response.json()
 
-            # Check if repo is empty
-            github_repo_commits = 'https://api.github.com/repos/' + owner_login + '/' + name + '/commits'
-            response = requests.get(github_repo_commits, headers=self.headers)
-            data_commits = response.json()
-            if 'message' not in data_commits:   # message says Git Repository is empty.
-                github_repo_contributors = 'https://api.github.com/repos/' + owner_login + '/' + name + '/contributors'
-                response = requests.get(github_repo_contributors, headers=self.headers)
-                contributors = response.json()
-                
-                if username!=owner_login:
-                    contributors.append(owner)
-                
-                for contributor in contributors:
-                    if self.check_contributors_list(list_contributors,contributor,username) ==False:
-                        list_contributors.append(contributor)
- 
-        for contributor in list_contributors:
-            if self.check_contributors_list(followers,contributor,username)==False:
-                list_who_to_follow.append({ 'login' : contributor['login'],'image' : contributor['avatar_url']})
+                    image = data['avatar_url']
+                    who_to_follow.append({ 'username' : contributor.username, 'image' : image })
 
-        
-        if len(list_who_to_follow)>=10:
-            list_who_to_follow=list_who_to_follow[0:10]
-        else:
-            counter_rem_followers=len(list_who_to_follow)
-            for org in orgs:
-                
-                github_org_members = 'https://api.github.com/orgs/'+org['login'] +'/members'
-                response = requests.get(github_org_members, headers=self.headers)
-                org_members = response.json()
+        if len(who_to_follow) < 10:
+            top_users = self.get_location_users(user.location)
 
-                for org_member in org_members:
-                    if self.check_contributors_list(list_org_members,org_member,username)==False:
-                        list_org_members.append({ 'login' : org_member['login'],'image' : org_member['avatar_url']})
-                    if self.check_contributors_list(followers,org_member,username)==False:
-                        if self.check_contributors_list(list_who_to_follow,org_member,username)==False:
-                            if(counter_rem_followers>=10):
-                                break;
-                                break;
-                            else:    
-                                list_who_to_follow.append({ 'login' : org_member['login'],'image' : org_member['avatar_url']})
-                                counter_rem_followers+=1
+            for top_user in top_users:
+                if top_user['username'] != user.username:
+                    if len(who_to_follow) >= 10:
+                        break
+                    else:
+                        github_user_image = 'https://api.github.com/users/'+top_user['username']
+                    
+                        response = requests.get(github_user_image, headers=self.headers)
+                        data = response.json()
 
-        return list_who_to_follow
+                        image = data['avatar_url']
+                        who_to_follow.append({ 'username' : top_user['username'], 'image' : image })
+
+        return who_to_follow
+

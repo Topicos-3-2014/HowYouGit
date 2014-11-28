@@ -35,7 +35,7 @@
 
     <div class="col-md-6">
 
-                <div class="repos-info">
+            <div class="repos-info">
             <h2><span class="mega-octicon octicon-repo"></span> {{ username }}'s repositories</h2>
             <br>
             {% for repo in repos %}
@@ -43,7 +43,7 @@
                 <a href="{{ repo.url }}">({{ repo.url }})</a>
                 <p>Language: {{ repo.language }}</p>
                 <p>Commits: {{ repo.commits }}</p>
-                <p>Contributors: {{ repo.contributors }}</p>
+                <p>Contributors: {{ repo.contributors|length }}</p>
                 <hr>
             {% endfor %}
         </div>
@@ -53,15 +53,13 @@
         <hr>
         <div id="contributors-chart" class="charts">
         </div>
-        <h2 ><span class="mega-octicon octicon-organization"></span> Contributions Graph</h2>
-        <div id="graph-container"></div>
         <div class="follow">
             <h2>Who to follow </h2> 
                 <br>
                 <br>   
                 {% for follow in who_to_follow %}
-                        <a href="http://github.com/{{ follow.login }}"><img src="{{ follow.image }}" class="img-circle pull-left"></a>
-                        <h4 class="follow-username">{{follow.login}}</h4>   
+                        <a href="http://github.com/{{ follow.username }}"><img src="{{ follow.image }}" class="img-circle pull-left"></a>
+                        <h4 class="follow-username">{{follow.username}}</h4>   
                         <div class="pull-right"><i class="fa fa-times"></i></div>
                         <div style="clear:both"></div>
                         <hr>
@@ -79,50 +77,6 @@
     </div>
 
 <script>
-    var i,
-        s,
-        N ={{size_contributors}} ,
-        E = {{size_contributors}},
-        g = {
-          nodes: [],
-          edges: []
-        };
-        g.nodes.push({
-            id: 'n',
-            label: '{{username}}',
-            x: 0,
-            y: 0,
-            size: {{max_contributor}}*20+20,
-            color: '#003F87'
-          });
-        {% for key, value in contributors.items %}                
-            g.nodes.push({
-                id: 'n' + '{{key}}',
-                label: '{{key}}'+':'+{{value}} +' project(s)' ,
-                x: Math.random()+1,
-                y: Math.random()+1,
-                size: ({{value}}%({{max_contributor}}+1)*20)+3,
-                color: '#0099CC'
-              });
-            g.edges.push({
-                id: '{{key}}',
-                label:{{value}},
-                source: 'n',
-                target: 'n' + '{{key}}',
-                size: 100,
-                color: '#00EE76'
-            });
-        {% endfor %}
-            
-    // Generate a random graph:
-  
-
-    // Instantiate sigma:
-    s = new sigma({
-      graph: g,
-      container: 'graph-container'
-    });    
-
 
 $(function () {
 

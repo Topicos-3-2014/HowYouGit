@@ -29,12 +29,24 @@
                 <div class="user-info col-md-10">
                     <br>
                     <h3>{{ user.username }}</h3>
-                    <p>Language: {{ user.language }}</p>
                     <p>Repositories: {{ user.repos }}</p>
                     <p>Followers: {{ user.followers }}</p>
                 </div>
                 <div class="pull-right"><i class="fa fa-times"></i></div>
                 <div style="clear:both"></div>
+                <hr>
+            {% endfor %}
+        </div>
+
+        <div class="repos-info">
+            <h2>Most important {{ location }}'s repositories</h2>
+            <br>
+            {% for repo in repos %}
+                <h4><span class="mega-octicon octicon-repo"></span> {{ repo.name }}</h4>
+                <p>Owner: {{ repo.owner }}</p>
+                <a href="{{ repo.html_url }}">({{ repo.html_url }})</a>
+                <p>Description: {{ repo.description }}</p>
+            
                 <hr>
             {% endfor %}
         </div>
